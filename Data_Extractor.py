@@ -1,6 +1,11 @@
 import os
 import pandas as pd
 
+
+def extract_start_hour(dataset_path: str) -> int:
+    first_hour = os.listdir(dataset_path)[0].replace('h', '')
+    return int(first_hour)
+
 def extract_amount_of_spreading_users_followers(dataset_path: str) -> list[int]:
     followers = []
 
@@ -67,14 +72,14 @@ def extract_misinformation_spreading_rates(dataset_path: str) -> list[tuple[floa
         df = pd.read_csv(data)
 
         for col in ['dir spreading_rate', 'dir like affected spreading_rate']:
-            df[col] = df[col].astype(str).str.replace('%', '').astype(float) / 100
+            df[col] = df[col].astype(str).str.replace('%', '').astype(float)
 
         og_post = df[(df['reply to url'].isna()) & (df['quote to url'].isna())]
 
         og_post_spread_no_like = float(og_post['dir spreading_rate'].sum())
         og_post_spread_with_like = float(og_post['dir like affected spreading_rate'].sum())
-        all_posts_mean_spread_no_like = float(df['dir spreading_rate'].mean())
-        all_posts_mean_spread_with_like = float(df['dir like affected spreading_rate'].mean())
+        all_posts_mean_spread_no_like = float(df['dir spreading_rate'].mean().round(5))
+        all_posts_mean_spread_with_like = float(df['dir like affected spreading_rate'].mean().round(5))
 
         spreading_rates.append((
             og_post_spread_no_like,
