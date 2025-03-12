@@ -3,8 +3,9 @@ import pandas as pd
 
 
 def extract_start_hour(dataset_path: str) -> int:
-    first_hour = os.listdir(dataset_path)[0].replace('h', '')
-    return int(first_hour)
+    files = os.listdir(dataset_path)
+    files_sorted = sorted(files, key=lambda x: int(x[:-1]))
+    return int(files_sorted[0][:-1])
 
 def extract_amount_of_spreading_users_followers(dataset_path: str) -> list[int]:
     followers = []
