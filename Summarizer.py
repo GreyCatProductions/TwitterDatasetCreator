@@ -3,15 +3,14 @@ import re
 import pandas as pd
 
 
-def main():
-    paths = ["06_01_25 Trudeau", "Alice Weidel 17_01_25", "Merz Habeck Merkel 31_01_25", "USAID Auflösung 05_02_25", "USAID Auflösung 07_02_25"]
+def process(paths, add_counters, create_summaries):
     for path in paths:
         if not os.path.exists(path):
             print(f"{path} does not exist")
             return
         if add_counters:
             count_entries(path)
-        if create_summary_csv:
+        if create_summaries:
             summarize(path)
 
 def count_entries(path: str):
@@ -20,7 +19,6 @@ def count_entries(path: str):
     for file_name in dataset_files:
         dataset_path = os.path.join(path, file_name)
         if re.search(r"_\(\d+\)$", dataset_path):
-            print(f"Skipping {file_name} (already counted)")
             continue
 
         hour_dirs = os.listdir(dataset_path)
@@ -72,9 +70,6 @@ def summarize(path: str):
 
         df = pd.read_csv(total)
 
-        # Debug: Print column names before processing
-        print(f"Columns in {total}: {df.columns.tolist()}")
-
         # Normalize column names (replace spaces with underscores)
         df.columns = df.columns.str.strip().str.replace(' ', '_')
 
@@ -98,9 +93,3 @@ def summarize(path: str):
         }])
         out_path = os.path.join(dataset_path, "summary.csv")
         data_row.to_csv(out_path, index=False)
-
-
-if __name__ == "__main__":
-    add_counters = True
-    create_summary_csv = True
-    main()

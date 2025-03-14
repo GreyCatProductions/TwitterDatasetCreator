@@ -1,5 +1,3 @@
-import os
-import pandas as pd
 from Data_Extractor import extract_amount_of_spreading_users_followers, extract_average_node_degrees, \
     extract_misinformation_spreading_rates, extract_start_hour
 from Summarizer import *
@@ -10,15 +8,19 @@ def main(hashtag_dir: str):
         print(f"{hashtag_dir} does not exist, exiting.")
         return
 
-    dataset_files = os.listdir(hashtag_dir)
+    files = os.listdir(hashtag_dir)
 
-    for file_name in dataset_files:
+    for file_name in files:
         dataset_path = os.path.join(hashtag_dir, file_name)
         start_hour = extract_start_hour(dataset_path)
         spreading_rates = extract_misinformation_spreading_rates(dataset_path)
         number_of_nodes = extract_amount_of_spreading_users_followers(dataset_path)
         avg_node_degrees = extract_average_node_degrees(dataset_path)
         data_rows = []
+
+        if spreading_rates is None:
+            print(f"{dataset_path} has no spreading rates, skipping.")
+            continue
 
         counter = 0
         for hour in range(start_hour, start_hour + len(spreading_rates)):
@@ -38,18 +40,19 @@ def main(hashtag_dir: str):
 
         mean_followers, mean_following = zip(*avg_node_degrees)
         og_no_like, og_like, all_mean_no_like, all_mean_like = zip(*spreading_rates)
+        length = len(spreading_rates)
 
         summary_row = {
             "hour": "Summary",
             "network_type": "",
-            "number_of_nodes (sum of all followers of spreading users)": round(sum(number_of_nodes)/len(number_of_nodes), 2),
+            "number_of_nodes (sum of all followers of spreading users)": round(sum(number_of_nodes)/ length, 2),
             "number_of_bots_and_authorities": "",
-            "average_node_degree (mean_followers, mean_following)": round((sum(mean_followers) + sum(mean_following)) / len(avg_node_degrees) if avg_node_degrees else 0, 2),
+            "average_node_degree (mean_followers, mean_following)": round((sum(mean_followers) + sum(mean_following)) / length, 2),
             "small_world": "",
             "always_connected": "",
             "directed": "",
             "initial_outbreak_size": "",
-            "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": round(sum(all_mean_like) / len(spreading_rates) if spreading_rates else 0, 2) ,
+            "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": round(sum(og_like) / length, 2) ,
         }
 
         data_rows.append(summary_row)
@@ -64,6 +67,8 @@ def main(hashtag_dir: str):
         print(f"{csv_filename} successfully created!")
 
 if __name__ == "__main__":
-    paths_to_create_datasets_for = ["Alice Weidel 17_01_25"]
-    for path in paths_to_create_datasets_for:
+    paths = ["Alice Weidel 17_01_25", "Merz Habeck Merkel 31_01_25", "USAID Auflösung 05_02_25",
+             "USAID Auflösung 07_02_25"]
+    process(paths, True, True)
+    for path in paths:
         main(path)

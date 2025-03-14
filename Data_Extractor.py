@@ -4,13 +4,20 @@ import pandas as pd
 
 def extract_start_hour(dataset_path: str) -> int:
     files = os.listdir(dataset_path)
-    files_sorted = sorted(files, key=lambda x: int(x[:-1]))
+    files_sorted = sorted(
+        [d for d in files if d[:-1].isdigit()],
+        key=lambda x: int(x[:-1])
+    )
     return int(files_sorted[0][:-1])
 
 def extract_amount_of_spreading_users_followers(dataset_path: str) -> list[int]:
     followers = []
-
-    for hour in os.listdir(dataset_path):
+    hours = os.listdir(dataset_path)
+    hours_sorted = sorted(
+        [d for d in hours if d[:-1].isdigit()],
+        key=lambda x: int(x[:-1])
+    )
+    for hour in hours_sorted:
         users = os.path.join(dataset_path, hour, 'users.csv')
 
         def convert_followers(value: str) -> int:
@@ -34,7 +41,12 @@ def extract_average_node_degrees(dataset_path: str) -> list[tuple[int, int]]:
     """
     average_node_degrees = []
 
-    for hour in os.listdir(dataset_path):
+    hours = os.listdir(dataset_path)
+    hours_sorted = sorted(
+        [d for d in hours if d[:-1].isdigit()],
+        key=lambda x: int(x[:-1])
+    )
+    for hour in hours_sorted:
         users = os.path.join(dataset_path, hour, 'users.csv')
 
         def convert_followers(value: str) -> int:
@@ -62,31 +74,39 @@ def extract_misinformation_spreading_rates(dataset_path: str) -> list[tuple[floa
              (og_post_no_like_spread, og_post_like_spread, all_posts_mean_spread_no_like, all_posts_mean_spread_like)
     """
     spreading_rates = []
+    hours = os.listdir(dataset_path)
+    hours_sorted = sorted(
+        [d for d in hours if d[:-1].isdigit()],
+        key=lambda x: int(x[:-1])
+    )
+    for hour in hours_sorted:
+        try:
+            data = os.path.join(dataset_path, hour, 'total.csv')
 
-    for hour in os.listdir(dataset_path):
-        data = os.path.join(dataset_path, hour, 'total.csv')
+            if not os.path.exists(data):
+                print(f"Skipping missing file: {data}")
+                continue
 
-        if not os.path.exists(data):
-            print(f"Skipping missing file: {data}")
-            continue
+            df = pd.read_csv(data)
 
-        df = pd.read_csv(data)
+            for col in ['dir spreading_rate', 'dir like affected spreading_rate']:
+                df[col] = df[col].astype(str).str.replace('%', '').astype(float)
 
-        for col in ['dir spreading_rate', 'dir like affected spreading_rate']:
-            df[col] = df[col].astype(str).str.replace('%', '').astype(float)
+            og_post = df[(df['reply to url'].isna()) & (df['quote to url'].isna())]
 
-        og_post = df[(df['reply to url'].isna()) & (df['quote to url'].isna())]
+            og_post_spread_no_like = float(og_post['dir spreading_rate'].sum())
+            og_post_spread_with_like = float(og_post['dir like affected spreading_rate'].sum())
+            all_posts_mean_spread_no_like = float(df['dir spreading_rate'].mean().round(5))
+            all_posts_mean_spread_with_like = float(df['dir like affected spreading_rate'].mean().round(5))
 
-        og_post_spread_no_like = float(og_post['dir spreading_rate'].sum())
-        og_post_spread_with_like = float(og_post['dir like affected spreading_rate'].sum())
-        all_posts_mean_spread_no_like = float(df['dir spreading_rate'].mean().round(5))
-        all_posts_mean_spread_with_like = float(df['dir like affected spreading_rate'].mean().round(5))
-
-        spreading_rates.append((
-            og_post_spread_no_like,
-            og_post_spread_with_like,
-            all_posts_mean_spread_no_like,
-            all_posts_mean_spread_with_like
-        ))
-
+            spreading_rates.append((
+                og_post_spread_no_like,
+                og_post_spread_with_like,
+                all_posts_mean_spread_no_like,
+                all_posts_mean_spread_with_like
+            ))
+        except Exception as e:
+            print(f"failed to extract spreading rate for {dataset_path}")
+            print(e)
+            return []
     return spreading_rates
