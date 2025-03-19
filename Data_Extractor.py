@@ -37,7 +37,10 @@ def extract_amount_of_spreading_users_followers(dataset_path: str) -> list[int]:
 
 def extract_average_node_degrees(dataset_path: str) -> list[tuple[int, int]]:
     """
-    :return: List of tuples of form (avg_followers, avg_following)
+    Extracts and prints the average number of followers and following per hour.
+
+    :param dataset_path: Path to the dataset directory.
+    :return: List of tuples of form (avg_followers, avg_following).
     """
     average_node_degrees = []
 
@@ -47,23 +50,31 @@ def extract_average_node_degrees(dataset_path: str) -> list[tuple[int, int]]:
         key=lambda x: int(x[:-1])
     )
     for hour in hours_sorted:
-        users = os.path.join(dataset_path, hour, 'users.csv')
+        users_file = os.path.join(dataset_path, hour, 'users.csv')
 
         def convert_followers(value: str) -> int:
             value = value.replace("Followers", "").replace(",", "")
             value = value.replace("Following", "").replace(",", "")
             if "K" in value:
-                return int(float(value.replace("K", "")) * 1_000)
+                val = int(float(value.replace("K", "")) * 1_000)
+                print(f"{value} -> {val}")
+                return val
             elif "M" in value:
-                return int(float(value.replace("M", "")) * 1_000_000)
+                val = int(float(value.replace("M", "")) * 1_000_000)
+                print(f"{value} -> {val}")
+                return val
             else:
-                return int(float(value))
+                val = int(float(value))
+                print(f"{value} -> {val}")
+                return val
 
-        df = pd.read_csv(users)
+        df = pd.read_csv(users_file)
         df["followers_count"] = df["followers_count"].apply(convert_followers)
         df["following_count"] = df["following_count"].apply(convert_followers)
+
         avg_followers = int(df["followers_count"].mean())
         avg_following = int(df["following_count"].mean())
+
         average_node_degrees.append((avg_followers, avg_following))
 
     return average_node_degrees

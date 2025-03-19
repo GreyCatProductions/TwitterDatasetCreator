@@ -52,7 +52,7 @@ def main(hashtag_dir: str):
             "always_connected": "",
             "directed": "",
             "initial_outbreak_size": "",
-            "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": round(sum(og_like) / length, 2) ,
+            "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": round(sum(og_like) / length, 2)
         }
 
         data_rows.append(summary_row)
@@ -67,8 +67,7 @@ def main(hashtag_dir: str):
         print(f"{csv_filename} successfully created!")
 
 if __name__ == "__main__":
-    paths = ["Alice Weidel 17_01_25", "Merz Habeck Merkel 31_01_25", "USAID Auflösung 05_02_25",
-             "USAID Auflösung 07_02_25"]
+    paths = ["USAID Auflösung 05_02_25"]
     process(paths, True, True)
     for path in paths:
         main(path)
