@@ -57,15 +57,12 @@ def extract_average_node_degrees(dataset_path: str) -> list[tuple[int, int]]:
             value = value.replace("Following", "").replace(",", "")
             if "K" in value:
                 val = int(float(value.replace("K", "")) * 1_000)
-                print(f"{value} -> {val}")
                 return val
             elif "M" in value:
                 val = int(float(value.replace("M", "")) * 1_000_000)
-                print(f"{value} -> {val}")
                 return val
             else:
                 val = int(float(value))
-                print(f"{value} -> {val}")
                 return val
 
         df = pd.read_csv(users_file)

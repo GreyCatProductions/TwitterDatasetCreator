@@ -34,28 +34,9 @@ def main(hashtag_dir: str):
                 "always_connected": True,
                 "directed": True,
                 "initial_outbreak_size": 1,
-                "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": spreading_rates[counter],
+                "spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": spreading_rates[counter],
             })
             counter += 1
-
-        mean_followers, mean_following = zip(*avg_node_degrees)
-        og_no_like, og_like, all_mean_no_like, all_mean_like = zip(*spreading_rates)
-        length = len(spreading_rates)
-
-        summary_row = {
-            "hour": "Summary",
-            "network_type": "",
-            "number_of_nodes (sum of all followers of spreading users)": round(sum(number_of_nodes)/ length, 2),
-            "number_of_bots_and_authorities": "",
-            "average_node_degree (mean_followers, mean_following)": round((sum(mean_followers) + sum(mean_following)) / length, 2),
-            "small_world": "",
-            "always_connected": "",
-            "directed": "",
-            "initial_outbreak_size": "",
-            "misinformation_spreading_rate (og_no_like, og_like, all_mean_no_like, all_mean_like) in %": round(sum(og_like) / length, 2)
-        }
-
-        data_rows.append(summary_row)
 
         df = pd.DataFrame(data_rows)
         csv_filename = f"dataset_{file_name.replace(' ', '_')}.csv"
@@ -67,7 +48,7 @@ def main(hashtag_dir: str):
         print(f"{csv_filename} successfully created!")
 
 if __name__ == "__main__":
-    paths = ["USAID Auflösung 05_02_25"]
+    paths = ["Alice Weidel 17_01_25", "Merz Habeck Merkel 31_01_25","USAID Auflösung 05_02_25", "USAID Auflösung 07_02_25"]
     process(paths, True, True)
     for path in paths:
         main(path)
