@@ -13,6 +13,7 @@ def process(paths, add_counters, create_summaries):
         if create_summaries:
             summarize(path)
 
+
 def count_entries(path: str):
     dataset_files = os.listdir(path)
 
@@ -46,6 +47,7 @@ def count_entries(path: str):
             os.rename(dataset_path, new_name)
             print(f"Summarized {file_name}")
 
+
 def summarize(path: str):
     dataset_files = os.listdir(path)
 
@@ -70,11 +72,8 @@ def summarize(path: str):
 
         df = pd.read_csv(total)
 
-        # Normalize column names (replace spaces with underscores)
-        df.columns = df.columns.str.strip().str.replace(' ', '_')
-
         # Ensure all required columns exist
-        required_columns = ["reply_to_url", "quote_to_url", "post_url", "user_url", "dir_like_affected_spreading_rate"]
+        required_columns = ['view_count', 'like_count', 'reply_count', 'repost_and_quote_count', "reply_to_url", "quote_to_url", "post_url", "user_url", "like_affected_spreading_rate"]
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             print(f"Skipping {total} - Missing columns: {missing_columns}")
@@ -83,13 +82,27 @@ def summarize(path: str):
         original_post = df[(df['reply_to_url'].isna() | (df['reply_to_url'] == "")) &
                            (df['quote_to_url'].isna() | (df['quote_to_url'] == ""))]
 
-        # Convert percentage column
-        df['dir_like_affected_spreading_rate'] = df['dir_like_affected_spreading_rate'].astype(str).str.rstrip('%').astype(float)
+        df['like_affected_spreading_rate'] = df['like_affected_spreading_rate'].astype(str).str.rstrip(
+            '%').astype(float)
+
+        og_post_url = original_post['post_url'].values[0]
 
         data_row = pd.DataFrame([{
-            "post_url": original_post['post_url'].values[0] if not original_post.empty else None,
-            "user_url": original_post['user_url'].values[0] if not original_post.empty else None,
-            "spreading_rate": df['dir_like_affected_spreading_rate'].mean(),
+            "post_url": og_post_url,
+            "user_url": original_post['user_url'].values[0],
+            "spreading_rate in %": df['like_affected_spreading_rate'].mean(),
+            "og_post_views": original_post['view_count'].values[0],
+            "total_views": df['view_count'].sum(),
+            "og_post_likes": original_post['like_count'].values[0],
+            "total_likes": df['like_count'].sum(),
+            "og_post_replies_with_spread": (df["reply_to_url"] == og_post_url).sum(),
+            "og_post_replies": original_post['reply_count'].values[0],
+            "total_replies_with_spread (also replies to quotes)": df['post_url'].count() - 1,
+            "total_replies:": df['reply_count'].sum(),
+            "og_post_quote_and_retweets": original_post['repost_and_quote_count'].values[0],
+            "total_quote_and_retweets": df['repost_and_quote_count'].sum()
         }])
+
         out_path = os.path.join(dataset_path, "summary.csv")
-        data_row.to_csv(out_path, index=False)
+        data_row.to_csv(out_path, index=False)  # Overwrite existing summary
+        print(f"Summary created for {file_name}")

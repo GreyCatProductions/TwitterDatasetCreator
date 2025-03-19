@@ -21,7 +21,7 @@ def extract_amount_of_spreading_users_followers(dataset_path: str) -> list[int]:
         users = os.path.join(dataset_path, hour, 'users.csv')
 
         def convert_followers(value: str) -> int:
-            value = value.replace(" Followers", "").replace(",", "")
+            value = value.replace("Followers", "").replace(",", "")
             if "K" in value:
                 return int(float(value.replace("K", "")) * 1_000)
             elif "M" in value:
@@ -89,15 +89,15 @@ def extract_misinformation_spreading_rates(dataset_path: str) -> list[tuple[floa
 
             df = pd.read_csv(data)
 
-            for col in ['dir spreading_rate', 'dir like affected spreading_rate']:
+            for col in ['spreading_rate', 'like_affected_spreading_rate']:
                 df[col] = df[col].astype(str).str.replace('%', '').astype(float)
 
-            og_post = df[(df['reply to url'].isna()) & (df['quote to url'].isna())]
+            og_post = df[(df['reply_to_url'].isna()) & (df['quote_to_url'].isna())]
 
-            og_post_spread_no_like = float(og_post['dir spreading_rate'].sum())
-            og_post_spread_with_like = float(og_post['dir like affected spreading_rate'].sum())
-            all_posts_mean_spread_no_like = float(df['dir spreading_rate'].mean().round(5))
-            all_posts_mean_spread_with_like = float(df['dir like affected spreading_rate'].mean().round(5))
+            og_post_spread_no_like = float(og_post['spreading_rate'].sum())
+            og_post_spread_with_like = float(og_post['like_affected_spreading_rate'].sum())
+            all_posts_mean_spread_no_like = float(df['spreading_rate'].mean().round(5))
+            all_posts_mean_spread_with_like = float(df['like_affected_spreading_rate'].mean().round(5))
 
             spreading_rates.append((
                 og_post_spread_no_like,

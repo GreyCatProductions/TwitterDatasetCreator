@@ -59,7 +59,7 @@ def main(hashtag_dir: str):
 
         df = pd.DataFrame(data_rows)
         csv_filename = f"dataset_{file_name.replace(' ', '_')}.csv"
-        dir_name = f"{hashtag_name}_data"
+        dir_name = f"{hashtag_name}_datasets"
         os.makedirs(dir_name, exist_ok=True)
         save_loc = os.path.join(dir_name, csv_filename)
         df.to_csv(save_loc, index=False, header=True)
